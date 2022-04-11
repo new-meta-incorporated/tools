@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <title>Learnset editor helper</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" href="images/favicon.png" />
+  </head>
+
+<body>
+<form name="send-learnset" action="{{ url_for('getLearnsetBlock') }}" method="post" class="form-example">
+  <div id="specdiv">
+	  <h3>Paste your spec in the text area below :</h3>
+	  <br/>Example:<br/><br/>mossedge@thunder,waterpulse,acidspray<br/><br/>
+	  <textarea id="learnsetSpec" name="learnsetSpec" rows="5" cols="100"></textarea>
+  </div>
+  <div class="form-example">
+    <input type="submit" value="Send learnsets data" id="submit-button">
+  </div>
+</form>
+{% if text %}
+  <div id="result">
+    Result:<br/><br/>
+    {% autoescape false %}
+      {% if not rejects %}
+        {{ text }}
+      {% endif %}
+      {% if rejects %}
+        Following moves have been rejected because cannot be identified in current moves data:<br/>
+        {% for i in text %}
+          &nbsp;&nbsp;&nbsp;- {{ i }}<br/>
+        {% endfor %}
+      {% endif %}
+    {% endautoescape %}
+  </div>
+{% endif %}
+</body>
+</html>
