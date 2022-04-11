@@ -74,6 +74,7 @@ def getLearnsetBlock():
 				return render_template('learnsetsHelper.html', text="Input text does not match requirements")
 			inputPokemonName = learnsetSpec.split('@')[0]
 			inputMoves = learnsetSpec.split('@')[1].split(',')
+            inputMoves = list(dict.fromkeys(inputMoves))
 			for inputMove in inputMoves:
 				if not validateMoveName(inputMove):
 					rejects.append(inputMove)
