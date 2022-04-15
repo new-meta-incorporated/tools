@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <title>Learnset editor helper</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" href="images/favicon.png" />
+  </head>
+
+<body>
+<form name="add-sprites" action="{{ url_for('addSprites') }}" method="post" class="form-example" enctype = "multipart/form-data">
+  <div id="sourcediv">
+	  <label for="name">Sprite name:</label>
+    <input type="text" id="sprite-name" name="sprite-name" required minlength="1" maxlength="30" size="30">
+
+    <p>What kind of sprite is it?:</p>
+    <input type="radio" id="regular" name="sprite-type" value="regular" checked>
+    <label for="regular">regular</label><br>
+    <input type="radio" id="shiny" name="sprite-type" value="shiny">
+    <label for="shiny">shiny</label><br>
+
+    <p>Which orientation is it?:</p>
+    <input type="radio" id="front" name="sprite-orientation" value="front" checked>
+    <label for="front">front</label><br>
+    <input type="radio" id="back" name="sprite-orientation" value="back">
+    <label for="back">back</label><br>
+
+    <label for="sprite">Upload this pokemon's sprite:</label><br/>
+    <label for="sprite">Send sprite</label><br>
+    <input type="file" id="sprite" name="sprite" accept="image/png" required>
+  </div>
+  <div class="form-example">
+    <input type="submit" value="Submit sprites" id="submit-button">
+  </div>
+  {% if error %}
+    <p>{{ error }}</p>
+  {% endif %}
+</form>
+</body>
+</html>

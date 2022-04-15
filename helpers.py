@@ -4,8 +4,13 @@ import requests
 import sys
 import codecs
 import os
+import subprocess
+#import ssh_agent_setup
+import pexpect
 
 from flask import Flask, redirect, url_for, request, jsonify, make_response, render_template
+from PIL import Image
+from git import Repo, Git
 
 import conf
 
@@ -13,6 +18,7 @@ import conf
 
 DEBUG = conf.datasources["debug"]
 DATA_DIR = conf.datasources["data_dir"]
+LOCAL_SPRITES_GIT_REPO = conf.git_repo["rootdir"]
 
 # /CONF #
 
@@ -60,6 +66,42 @@ def cleanSpecs(spec):
 	print(spec)
 	return spec
 
+def saveSprite(sprite, type, orientation, filename):
+	filepaths = []
+	if type == 'regular' and orientation == 'front':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["dex"] + filename)
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5"] + filename)
+	if type == 'regular' and orientation == 'back':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back"] + filename)
+	if type == 'shiny' and orientation == 'front':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-shiny"] + filename)
+	if type == 'shiny' and orientation == 'back':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
+	for filepath in filepaths:
+		sprite.save(filepath)
+	return filepaths
+
+def uploadOnGithub(filepaths):
+
+	### Draft about SSH implementation ###
+
+	# process = subprocess.run( [ 'ssh-agent', '-s' ], stdout = subprocess.PIPE, universal_newlines = True )
+	# args = [conf.git_repo["sshkey"]]
+	# child = pexpect.spawn('ssh-add', args)
+	# child.expect('.*')
+	# child.sendline(conf.git_repo["sshkey-password"])  # your secure password
+
+	message = "Added: "
+	os.chdir(LOCAL_SPRITES_GIT_REPO)
+	repo = Repo.init(LOCAL_SPRITES_GIT_REPO).git
+	index = Repo.init(LOCAL_SPRITES_GIT_REPO).index
+	for filepath in filepaths:
+		message += "\n" + filepath.split(LOCAL_SPRITES_GIT_REPO)[1]
+		repo.add(filepath)
+	index.commit(message)
+	g = Git(LOCAL_SPRITES_GIT_REPO)
+	g.push('origin','master')
+
 @app.route('/')
 def index():
     return render_template('home.html')
@@ -83,6 +125,17 @@ def getLearnsetBlock():
 			typescriptResponse = getTypescriptBlock(inputPokemonName, inputMoves)
 			return render_template('learnsetsHelper.html', text=typescriptResponse, mimetype='text/html')
 	return render_template('learnsetsHelper.html')
+
+@app.route('/addSprites',methods = ['POST', 'GET'])
+def addSprites():
+	if request.method == 'POST':
+		if 'sprite' in request.files and request.form:
+			if '.png' not in request.form['sprite-name']:
+				return render_template('spritesHelper.html', error='malformed sprite name: missing .png')
+			filepaths = saveSprite(request.files['sprite'], request.form['sprite-type'], request.form['sprite-orientation'], request.form['sprite-name'])
+			uploadOnGithub(filepaths)
+			return render_template('spritesHelper.html')
+	return render_template('spritesHelper.html')
 
 if __name__ == '__main__':
 	if DEBUG:
