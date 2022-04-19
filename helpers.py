@@ -63,6 +63,7 @@ def saveSprite(sprite, type, orientation, filename, autoflip):
 	if type == 'regular' and orientation == 'back' and autoflip == 'no':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back"] + filename)
 	if type == 'shiny' and orientation == 'front':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["dex-shiny"] + filename)
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-shiny"] + filename)
 	if type == 'shiny' and orientation == 'back' and autoflip == 'no':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
