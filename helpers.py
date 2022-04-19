@@ -52,7 +52,6 @@ def cleanSpecs(spec):
 	for char in invalidChars:
 		spec = spec.replace(char, '')
 	spec = spec.lower()
-	print(spec)
 	return spec
 
 def saveSprite(sprite, type, orientation, filename, autoflip):
@@ -68,7 +67,8 @@ def saveSprite(sprite, type, orientation, filename, autoflip):
 	if type == 'shiny' and orientation == 'back' and autoflip == 'no':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
 	for filepath in filepaths:
-		sprite.save(filepath)
+		tmpSprite = Image.open(sprite)
+		tmpSprite.save(filepath)
 	if type == 'regular' and orientation == 'front':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["icons"] + filename)
 		icon = Image.open(sprite)
@@ -84,7 +84,6 @@ def saveSprite(sprite, type, orientation, filename, autoflip):
 		autoflippedBacksprite = Image.open(sprite)
 		autoflippedBacksprite = autoflippedBacksprite.transpose(PIL.Image.FLIP_LEFT_RIGHT)
 		autoflippedBacksprite.save(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
-	print(filepaths)
 	return filepaths
 
 def uploadOnGithub(filepaths):
