@@ -1,28 +1,19 @@
-import random
-import json
-import requests
-import sys
-import codecs
 import os
-import subprocess
-#import ssh_agent_setup
-import pexpect
-
-from flask import Flask, redirect, url_for, request, jsonify, make_response, render_template
+from flask import Flask, request, render_template
+import PIL
 from PIL import Image
 from git import Repo, Git
 
+#User-defined config file
 import conf
 
-# CONF #
+########################## CONF ##########################
 
 DEBUG = conf.datasources["debug"]
 DATA_DIR = conf.datasources["data_dir"]
 LOCAL_SPRITES_GIT_REPO = conf.git_repo["rootdir"]
 
-# /CONF #
-
-### MAIN ###
+########################## MAIN ##########################
 #Backend Flask app code starts there
 app = Flask(__name__)
 
@@ -45,9 +36,7 @@ def validateMoveName(moveName):
 	return False
 
 def getTypescriptBlock(pokemon, moves):
-	#carriageReturn = "\r\n"
 	carriageReturn = "<br/>"
-	#tabulation = "\t"
 	tabulation = "&nbsp;&nbsp;&nbsp;"
 	typescriptBlock = ""
 	typescriptBlock += pokemon + ": {" + carriageReturn
@@ -66,41 +55,51 @@ def cleanSpecs(spec):
 	print(spec)
 	return spec
 
-def saveSprite(sprite, type, orientation, filename):
+def saveSprite(sprite, type, orientation, filename, autoflip):
 	filepaths = []
 	if type == 'regular' and orientation == 'front':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["dex"] + filename)
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5"] + filename)
-	if type == 'regular' and orientation == 'back':
+	if type == 'regular' and orientation == 'back' and autoflip == 'no':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back"] + filename)
 	if type == 'shiny' and orientation == 'front':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-shiny"] + filename)
-	if type == 'shiny' and orientation == 'back':
+	if type == 'shiny' and orientation == 'back' and autoflip == 'no':
 		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
 	for filepath in filepaths:
 		sprite.save(filepath)
+	if type == 'regular' and orientation == 'front':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["icons"] + filename)
+		icon = Image.open(sprite)
+		icon = icon.resize((40, 40))
+		icon.save(LOCAL_SPRITES_GIT_REPO + conf.git_repo["icons"] + filename)
+	if type == 'regular' and orientation == 'back' and autoflip == 'yes':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back"] + filename)
+		autoflippedBacksprite = Image.open(sprite)
+		autoflippedBacksprite = autoflippedBacksprite.transpose(PIL.Image.FLIP_LEFT_RIGHT)
+		autoflippedBacksprite.save(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back"] + filename)
+	if type == 'shiny' and orientation == 'back' and autoflip == 'yes':
+		filepaths.append(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
+		autoflippedBacksprite = Image.open(sprite)
+		autoflippedBacksprite = autoflippedBacksprite.transpose(PIL.Image.FLIP_LEFT_RIGHT)
+		autoflippedBacksprite.save(LOCAL_SPRITES_GIT_REPO + conf.git_repo["gen5-back-shiny"] + filename)
+	print(filepaths)
 	return filepaths
 
 def uploadOnGithub(filepaths):
-
-	### Draft about SSH implementation ###
-
-	# process = subprocess.run( [ 'ssh-agent', '-s' ], stdout = subprocess.PIPE, universal_newlines = True )
-	# args = [conf.git_repo["sshkey"]]
-	# child = pexpect.spawn('ssh-add', args)
-	# child.expect('.*')
-	# child.sendline(conf.git_repo["sshkey-password"])  # your secure password
-
 	message = "Added: "
 	os.chdir(LOCAL_SPRITES_GIT_REPO)
 	repo = Repo.init(LOCAL_SPRITES_GIT_REPO).git
 	index = Repo.init(LOCAL_SPRITES_GIT_REPO).index
+	g = Git(LOCAL_SPRITES_GIT_REPO)
+	g.pull('origin','master')
 	for filepath in filepaths:
 		message += "\n" + filepath.split(LOCAL_SPRITES_GIT_REPO)[1]
 		repo.add(filepath)
 	index.commit(message)
-	g = Git(LOCAL_SPRITES_GIT_REPO)
 	g.push('origin','master')
+
+########################## ROUTES ##########################
 
 @app.route('/')
 def index():
@@ -132,7 +131,13 @@ def addSprites():
 		if 'sprite' in request.files and request.form:
 			if '.png' not in request.form['sprite-name']:
 				return render_template('spritesHelper.html', error='malformed sprite name: missing .png')
-			filepaths = saveSprite(request.files['sprite'], request.form['sprite-type'], request.form['sprite-orientation'], request.form['sprite-name'])
+			filepaths = saveSprite(
+				request.files['sprite'], 
+				request.form['sprite-type'], 
+				request.form['sprite-orientation'], 
+				request.form['sprite-name'], 
+				request.form['autoflip']
+			)
 			uploadOnGithub(filepaths)
 			return render_template('spritesHelper.html')
 	return render_template('spritesHelper.html')
