@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Newmeta showdown API</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="icon" href="images/favicon.png" />
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    </style>
+</head>
+
+<body>
+  <h1>Newmeta showdown API routes</h1>
+  <table>
+    {% for route in routes %}
+      <tr>
+        <td>{{ route['desc'] }}</td>
+        <td><a href="{{ baseUrl }}{{ route['route'] }}">{{ baseUrl }}{{ route['route'] }}</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
