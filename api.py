@@ -11,7 +11,6 @@ DEBUG = conf.datasources["debug"]
 TEXT_DATA_DIR = conf.datasources["text_data_dir"]
 DATA_DIR = conf.datasources["data_dir"]
 LOCAL_SPRITES_GIT_REPO = conf.git_repo["rootdir"]
-# API_BASEURL = conf.api["base_url"]
 
 ########################## MAIN ##########################
 #Backend Flask app code starts there
@@ -298,6 +297,6 @@ def getItem(itemId):
 
 if __name__ == '__main__':
 	if DEBUG:
-		app.run(host="localhost", port=5001, debug = DEBUG)
+		app.run(port=5001, debug = DEBUG)
 	else:
 		app.run(host='0.0.0.0')
