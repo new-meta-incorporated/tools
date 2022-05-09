@@ -10,7 +10,7 @@ import conf
 ########################## CONF ##########################
 
 DEBUG = conf.datasources["debug"]
-DATA_DIR = conf.datasources["data_dir"]
+DATA_DIR = conf.datasources["text_data_dir"]
 LOCAL_SPRITES_GIT_REPO = conf.git_repo["rootdir"]
 
 ########################## MAIN ##########################
