@@ -146,4 +146,4 @@ if __name__ == '__main__':
 	if DEBUG:
 		app.run(debug = DEBUG)
 	else:
-		app.run(host='0.0.0.0')
+		app.run(port=5000, host='0.0.0.0')

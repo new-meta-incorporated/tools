@@ -299,4 +299,4 @@ if __name__ == '__main__':
 	if DEBUG:
 		app.run(port=5001, debug = DEBUG)
 	else:
-		app.run(host='0.0.0.0')
+		app.run(port=5001, host='0.0.0.0')
